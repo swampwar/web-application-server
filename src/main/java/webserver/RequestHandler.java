@@ -16,6 +16,8 @@ import org.slf4j.LoggerFactory;
 
 import util.YangUtils;
 
+
+
 public class RequestHandler extends Thread {
     private static final Logger log = LoggerFactory.getLogger(RequestHandler.class);
 
@@ -32,26 +34,26 @@ public class RequestHandler extends Thread {
         try (InputStream in = connection.getInputStream(); OutputStream out = connection.getOutputStream()) {
             // TODO 사용자 요청에 대한 처리는 이 곳에 구현하면 된다.
         	
-        	// 1. HTTP 요청정보를 읽기위해 BufferedReader 생성
+        	// HTTP 요청정보를 읽기위해 BufferedReader 생성
         	BufferedReader br = new BufferedReader(new InputStreamReader(in,StandardCharsets.UTF_8));
         	
-        	// 2. BufferedReader로 HTTP 요청정보 출력
         	String line;
         	String url = "";
-        	int i = 0;
+        	line = br.readLine();
         	
-        	while((line = br.readLine()) != null && !"".equals(line)) {
-        		log.debug(line);
-        		if(i==0) url = YangUtils.getUrl(line);
-        		i++;
-        	}
+        	// request의 URL에서 path, parameter 추출
+        	url = YangUtils.getUrl(line);
+        	log.debug("request url : {} ", url);
         	
-        	log.debug("url : " + url);
+        	String requestPath = "";
+        	String params = "";
+        	
+        	// url : /user/create?userId=123&userPw=pwpw
+        	//String[] reqPathParams = YangUtils.getPathParams(url);
+        	
         	
         	// 3. 요청URL에 해당되는 파일을 전달
         	byte[] body = Files.readAllBytes(new File("./webapp"+url).toPath());
-        	
-        	log.debug("end..");
         	
             DataOutputStream dos = new DataOutputStream(out);
             response200Header(dos, body.length);
