@@ -10,10 +10,14 @@ import java.io.OutputStream;
 import java.net.Socket;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
+import java.util.Map;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import model.User;
+import util.HttpRequestUtils;
+import util.IOUtils;
 import util.YangUtils;
 
 
@@ -34,26 +38,30 @@ public class RequestHandler extends Thread {
         try (InputStream in = connection.getInputStream(); OutputStream out = connection.getOutputStream()) {
             // TODO 사용자 요청에 대한 처리는 이 곳에 구현하면 된다.
         	
-        	// HTTP 요청정보를 읽기위해 BufferedReader 생성
         	BufferedReader br = new BufferedReader(new InputStreamReader(in,StandardCharsets.UTF_8));
         	
-        	String line;
-        	String url = "";
-        	line = br.readLine();
-        	
+        	String line = br.readLine();
+        	String url = YangUtils.getUrl(line);
+
         	// request의 URL에서 path, parameter 추출
         	url = YangUtils.getUrl(line);
-        	log.debug("request url : {} ", url);
+        	String[] reqeustData = YangUtils.getDataFromURL(url);
         	
-        	String requestPath = "";
-        	String params = "";
+        	Map<String,String> reqMap = HttpRequestUtils.parseQueryString(reqeustData[1]);
+        	User user = new User(reqMap.get("userId"),reqMap.get("password"),reqMap.get("name"),reqMap.get("email"));
         	
-        	// url : /user/create?userId=123&userPw=pwpw
-        	//String[] reqPathParams = YangUtils.getPathParams(url);
+        	log.debug(user.toString());
         	
+        	while(!"".equals(line)) {
+        		line = br.readLine();
+        	}
+        	
+        	if(url.startsWith("/user/create")) {
+        		log.debug(IOUtils.readData(br, 40));
+        	}
         	
         	// 3. 요청URL에 해당되는 파일을 전달
-        	byte[] body = Files.readAllBytes(new File("./webapp"+url).toPath());
+        	byte[] body = Files.readAllBytes(new File("./webapp"+reqeustData[0]).toPath());
         	
             DataOutputStream dos = new DataOutputStream(out);
             response200Header(dos, body.length);

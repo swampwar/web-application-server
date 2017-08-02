@@ -17,26 +17,33 @@ public class YangUtils {
     	String[] strArray = line.split(" ");
     	String url = strArray[1];
     	
+    	log.debug("request header : {} ", line);
+    	log.debug("request url : {} ", url);
+    	
     	return url;
     }
 
-    @Test
-	public void getPathParams() {
-//        String url = "/user/create?userId=123&userPw=pwpw";
-        String url = "/user/create";
-        
-    	String[] pathParams = new String[2];
+	public static String[] getDataFromURL(String url) {
+
+        String path = "";
+        String queryString = "";
+    	String[] data = new String[2];
 		
 		int index = url.indexOf('?');
-		if(index == -1){
-			index = url.length()-1;
+		
+		if(index == -1) {
+			path = url;
+		}else {
+			path = url.substring(0,index);
+			queryString = url.substring(index+1);
 		}
+
+		log.debug("request path : {}, request params : {}",path,queryString);
 		
-		String path = url.substring(0,index);
-		String params = url.substring(index+1,url.length());
+		data[0] = path;
+		data[1] = queryString;
 		
-		log.debug("path : {}, params : {}",path,params);
-		
-		
+		return data;
 	}
+	
 }
