@@ -15,6 +15,8 @@ import java.util.Map;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.google.common.collect.Maps;
+
 import model.User;
 import util.HttpRequestUtils;
 import util.IOUtils;
@@ -39,29 +41,37 @@ public class RequestHandler extends Thread {
             // TODO 사용자 요청에 대한 처리는 이 곳에 구현하면 된다.
         	
         	BufferedReader br = new BufferedReader(new InputStreamReader(in,StandardCharsets.UTF_8));
+        	String line = br.readLine(); // HTTP 헤더의 첫째줄
         	
-        	String line = br.readLine();
-        	String url = YangUtils.getUrl(line);
-
-        	// request의 URL에서 path, parameter 추출
-        	url = YangUtils.getUrl(line);
-        	String[] reqeustData = YangUtils.getDataFromURL(url);
+        	// request의 URL에서 method, path, parameter 추출
+        	String[] reqeustData = YangUtils.getDataFromURL(line);
+        	Map<String,String> reqMap = Maps.newHashMap();
         	
-        	Map<String,String> reqMap = HttpRequestUtils.parseQueryString(reqeustData[1]);
+        	// http reqeust method에 따라 입력데이터 추출
+        	if("GET".equals(reqeustData[0])) {
+        		reqMap = HttpRequestUtils.parseQueryString(reqeustData[2]);
+        		
+        	}else if("POST".equals(reqeustData[0])) {
+        		int contentLength = 0;
+        		
+            	while(true) {
+            		String tempLine = br.readLine();
+            		if(tempLine.startsWith("Content-Length")) {
+            			contentLength = Integer.parseInt(tempLine.split(":")[1].trim());
+            		}else if("".equals(tempLine)) {
+            			break;
+            		}
+            	}
+            	
+        		reqMap = HttpRequestUtils.parseQueryString(IOUtils.readData(br, contentLength));
+        	}
+        	
+        	// model.User에 저장
         	User user = new User(reqMap.get("userId"),reqMap.get("password"),reqMap.get("name"),reqMap.get("email"));
-        	
         	log.debug(user.toString());
         	
-        	while(!"".equals(line)) {
-        		line = br.readLine();
-        	}
-        	
-        	if(url.startsWith("/user/create")) {
-        		log.debug(IOUtils.readData(br, 40));
-        	}
-        	
-        	// 3. 요청URL에 해당되는 파일을 전달
-        	byte[] body = Files.readAllBytes(new File("./webapp"+reqeustData[0]).toPath());
+        	// req URL에 해당되는 파일을 전달
+        	byte[] body = Files.readAllBytes(new File("./webapp"+reqeustData[1]).toPath());
         	
             DataOutputStream dos = new DataOutputStream(out);
             response200Header(dos, body.length);

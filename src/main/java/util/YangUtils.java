@@ -23,25 +23,29 @@ public class YangUtils {
     	return url;
     }
 
-	public static String[] getDataFromURL(String url) {
+	public static String[] getDataFromURL(String httpHeaderLine) {
 
         String path = "";
         String queryString = "";
-    	String[] data = new String[2];
+        String reqMethod = "";
+    	String[] data = new String[3];
+    	String[] strArray = httpHeaderLine.split(" ");
+    	
+    	reqMethod = strArray[0];
 		
-		int index = url.indexOf('?');
-		
+		int index = strArray[1].indexOf('?');
 		if(index == -1) {
-			path = url;
+			path = strArray[1];
 		}else {
-			path = url.substring(0,index);
-			queryString = url.substring(index+1);
+			path = strArray[1].substring(0,index);
+			queryString = strArray[1].substring(index+1);
 		}
 
-		log.debug("request path : {}, request params : {}",path,queryString);
+		log.debug("request method : {}, request path : {}, request params : {}",reqMethod,path,queryString);
 		
-		data[0] = path;
-		data[1] = queryString;
+		data[0] = reqMethod;
+		data[1] = path;
+		data[2] = queryString;
 		
 		return data;
 	}
