@@ -24,8 +24,9 @@
 * 서버에서 받게되는 Request Header : POST \user\create HTTP/1.1 
 * form 에 포함된 데이터는 HTTP Request 본문에 담겨있다.
 
+
 ### 요구사항 4 - redirect 방식으로 이동
-* 
+*  
 
 ### 요구사항 5 - cookie
 * 

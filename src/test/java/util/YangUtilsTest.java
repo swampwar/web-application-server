@@ -22,9 +22,19 @@ public class YangUtilsTest {
 		
 		char[] rslt = "123456789".toCharArray();
 		
+		br.mark(0);
 		br.read(rslt, 2, 3);
 		
 		System.out.println(rslt);
+		
+		br.reset();
+		
+		br.read(rslt, 0, 3);
+		System.out.println("1");
+		System.out.println(rslt);
+		
+		
+		
 		
 		
 	}
