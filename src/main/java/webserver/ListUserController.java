@@ -9,15 +9,12 @@ import org.slf4j.LoggerFactory;
 import db.DataBase;
 import model.User;
 
-public class ListUserController implements Controller {
+public class ListUserController extends AbstractController {
 	
 	private static final Logger log = LoggerFactory.getLogger(ListUserController.class);
-
-	@Override
-	public void service(HttpRequest request, HttpResponse response) {
-		
+	
+	public void doGet(HttpRequest request, HttpResponse response) {
 		try {
-        
 	        if (!request.getLogined()) { // 로그인상태가 아니면
 	            response.sendRedirect("/user/login.html");
 	            return;
@@ -42,6 +39,10 @@ public class ListUserController implements Controller {
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
+	}
+
+	@Override
+	protected void doPost(HttpRequest request, HttpResponse response) {
 		
 	}
 

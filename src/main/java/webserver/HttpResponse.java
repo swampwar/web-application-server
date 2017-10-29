@@ -27,17 +27,11 @@ public class HttpResponse {
         byte[] body = Files.readAllBytes(new File("./webapp" + url).toPath());
         
         if (url.endsWith(".css")) {
-        	
         	addHeader("Content-Type", "text/css;charset=utf-8");
-        	
         }else if(url.endsWith(".js")){
-        	
         	addHeader("Content-Type", "application/javascript");
-        	
         }else {
-        	
         	addHeader("Content-Type", "text/html;charset=utf-8");
-        	
         }
         
         addHeader("Content-Length", Integer.toString(body.length)); // dos.writeBytes("Content-Length: " + lengthOfBodyContent + "\r\n");
