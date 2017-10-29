@@ -15,8 +15,9 @@ public class HttpRequest {
 	
 	private Map<String, String> reqHeaderMap = new HashMap<String,String>();
 	private Map<String, String> reqParamMap = new HashMap<String,String>();
-	private String method;
-	private String path;
+	private HttpMethod method; // GET or POST
+	private String path; // 요청URL
+	private boolean logined;
 
 	public HttpRequest(InputStream in) {
 		
@@ -25,10 +26,16 @@ public class HttpRequest {
 		
 			String line = br.readLine();
 			
+			/**
+			 *  HTTP요청 헤더의 첫번째 라인에서 method와 path를 추출한다. 
+			 */
 			String[] firstLine = line.split(" ");
-			this.method = firstLine[0];
+			this.method = method.valueOf(firstLine[0]);
 			this.path = firstLine[1];
 			
+			/**
+			 *  HTTP요청 헤더를 파싱하여 reqHeaderMap에 저장한다. 
+			 */
 			while(true) {
 				line = br.readLine();
 				if(line == null || "".equals(line)) break;
@@ -36,18 +43,26 @@ public class HttpRequest {
 				reqHeaderMap.put(line.substring(0, line.indexOf(':')).trim(), line.substring(line.indexOf(':')+1).trim());
 			}
 			
-			if("GET".equals(this.getMethod())) {
+			/**
+			 *  method에 따라 parameter를 추출하여 reqParamMap에 저장한다.
+			 */
+			if(this.method.isGet()) { // GET 방식 요청에서
 				if(this.path.indexOf('?') != -1) {	// QueryString이 있으면
 					String queryString = this.path.substring(this.path.indexOf('?')+1);
 					
-					reqParamMap = HttpRequestUtils.parseQueryString(queryString);
-					this.path = this.path.substring(0, this.path.indexOf('?'));
+					reqParamMap = HttpRequestUtils.parseQueryString(queryString); // parameter 추출
+					this.path = this.path.substring(0, this.path.indexOf('?')); // path 재정의('?' 이전 까지만)
 				}
 				
-			}else if("POST".equals(this.getMethod())) {
-				String body = IOUtils.readData(br, Integer.parseInt(reqHeaderMap.get("Content-Length")));
-				reqParamMap = HttpRequestUtils.parseQueryString(body);
+			}else if(this.method.isPost()) { // POST 방식 요청에서
+				String body = IOUtils.readData(br, Integer.parseInt(reqHeaderMap.get("Content-Length"))); 
+				reqParamMap = HttpRequestUtils.parseQueryString(body); // body의 parameter 추출
 			}
+			
+			/**
+			 *  reqHeaderMap의 Cookie에서 로그인여부를 확인한다.
+			 */
+			this.logined = isLogin(reqHeaderMap.get("Cookie")); // 로그인여부 세팅
 			
 		} catch (IOException e) {
 			e.printStackTrace();
@@ -55,12 +70,16 @@ public class HttpRequest {
 		
 	}
 	
-	public String getMethod() {
+	public HttpMethod getMethod() {
 		return this.method;
 	}
 	
 	public String getPath() {
 		return this.path;
+	}
+	
+	public boolean getLogined() {
+		return this.logined;
 	}
 	
 	public String getHeader(String key) {
@@ -70,5 +89,14 @@ public class HttpRequest {
     public String getParameter(String key) {
 		return reqParamMap.get(key);
 	}
+    
+    private boolean isLogin(String cookie) {
+        Map<String, String> cookies = HttpRequestUtils.parseCookies(cookie);
+        String value = cookies.get("logined");
+        if (value == null) {
+            return false;
+        }
+        return Boolean.parseBoolean(value);
+    }
 
 }

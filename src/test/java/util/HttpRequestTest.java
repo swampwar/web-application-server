@@ -9,6 +9,7 @@ import java.io.InputStream;
 
 import org.junit.Test;
 
+import webserver.HttpMethod;
 import webserver.HttpRequest;
 
 public class HttpRequestTest {
@@ -21,10 +22,11 @@ public class HttpRequestTest {
 		
 		HttpRequest request = new HttpRequest(in);
 		
-		assertEquals("GET",request.getMethod());
+		assertEquals(HttpMethod.GET,request.getMethod());
 		assertEquals("/user/create",request.getPath());
 		assertEquals("keep-alive",request.getHeader("Connection"));
 		assertEquals("testid",request.getParameter("userId"));
+		assertEquals(true,request.getLogined());
 	}
 	
 	@Test
@@ -34,7 +36,7 @@ public class HttpRequestTest {
 		
 		HttpRequest request = new HttpRequest(in);
 		
-		assertEquals("POST",request.getMethod());
+		assertEquals(HttpMethod.POST,request.getMethod());
 		assertEquals("/user/create",request.getPath());
 		assertEquals("keep-alive",request.getHeader("Connection"));
 		assertEquals("testid",request.getParameter("userId"));
